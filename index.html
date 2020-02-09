@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tezos Paper Wallet</title>
+  <script src="eztz.min.js"></script>
+  <script src="qr.js"></script>
+</head>
+
+<body>
+<div>
+  <h1 class="no-print">Tezos Paper Wallet</h1>
+
+  <input type="number" id="generateHowMany" value="1" class="input no-print">
+  <button class="button button_primary no-print" style="margin-top:25px" onclick="generate();"> Generate </button>
+  <button class="button button_primary no-print" onclick="window.print();"> Print </button>
+  <a href="https://github.com/resilience-me/eos-paper-wallet/"  target="_blank">
+  <button class="button button_primary no-print"> Full Source Code </button></a>
+
+</div>
+
+<div id="container"></div>
+
+<template id="paperWalletTemplate">
+
+  <div style="outline-style: solid; outline-width: thin; margin-top:20px; margin-bottom:20px">
+    <div class="qr qr-code-1">
+        <img style="padding-left: 10px;" id="publicKeyCanvas" src="">
+        <p class="print-text">Public Key</p>
+    </div>
+
+    <div class="logo-container">
+      <img class="logo-image" src="tezoslogo.jpg">
+    </div>
+
+    <div class="qr qr-code-1">
+      <img style="padding-left: 10px;" id="privateKeyCanvas" src="">
+      <p class="print-text">Private Key</p>
+    </div>
+      
+    <div class="key-text">
+      <p style="margin-bottom: 0px;">Public Key:</p>
+      <div id="publicKey"></div>
+      <p style="margin-bottom: 0px;">Private Key:</p>
+      <div id="privateKey"></div>
+    </div>
+  </div>
+
+</template>
+        
+<script>
+
+    function generate() {
+
+        /* Reset the wallet container */
+
+        if(document.querySelector("#walletsLoaded")) {
+            document.querySelector('#walletsLoaded').remove();
+        }
+
+        /* Load a new container */
+
+        var div = document.createElement("div");
+        div.id = "walletsLoaded";
+        
+        document.querySelector("#container").appendChild(div);
+
+        /* How many wallets to generate? */
+
+        var quantity = document.querySelector("#generateHowMany").value;    
+
+        /* Generate the wallets and load them in the DOM */
+
+        for(i = 0; i < quantity; i++) {
+
+            /* Load the paper wallet template */
+            var content = document.querySelector('#paperWalletTemplate').content;
+            
+            // Create a new random private key
+            var keys = eztz.crypto.generateKeys(eztz.crypto.generateMnemonic(), 0)
+
+            let publicKey = keys.pkh;
+
+                /* Write data to the template */
+
+                content.querySelector('#publicKey').textContent = keys.pkh;
+                var qr = new QRious({
+                    value: keys.pkh,
+                    size: 150
+                });     
+                content.querySelector('#publicKeyCanvas').src = qr.toDataURL();
+                
+                content.querySelector('#privateKey').textContent = keys.mnemonic;
+                var qr = new QRious({
+                    value: keys.mnemonic,
+                    size: 150
+                });       
+                content.querySelector('#privateKeyCanvas').src = qr.toDataURL();
+
+                /* Append the template instance to the DOM */
+
+                var clone = document.importNode(content, true);
+                document.querySelector('#walletsLoaded').appendChild(clone);
+
+        
+        }
+    }
+
+</script>
+
+  <style type="text/css" scoped>
+    html {
+      box-sizing: border-box;
+    }
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-size: 1rem;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      width:700px;
+
+    }
+
+    .content {
+      margin: 64px auto;
+      width: 94%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .print-text {
+        position: relative;
+        transform: rotate(-90deg);
+    }
+    .qr {
+      width:30%;
+      display:inline-block;
+      padding-left: 15px;
+      margin-top:20px;
+    }
+    .qr-code-1 .print-text {
+        left: 75px;
+        bottom: 150px;
+        margin:0;
+    }
+
+    .qr-code-2 .print-text {
+        left: 75px;
+        bottom: 150px;
+        margin:0;
+    }
+
+    .button {
+      display: inline-block;
+      margin: 0;
+      padding: 0.75rem 1rem;
+      border: 0;
+      border-radius: 0.317rem;
+      background-color: #aaa;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.5;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      cursor: pointer;
+      -webkit-appearance: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .button:hover {
+      opacity: 0.85;
+    }
+
+    .button:active {
+      box-shadow: inset 0 3px 4px hsla(0, 0%, 0%, 0.2);
+    }
+
+    .button:focus {
+      outline: thin dotted #444;
+      outline: 5px auto -webkit-focus-ring-color;
+      outline-offset: -2px;
+    }
+
+    .button_primary {
+      background-color: #1fa3ec;
+    }
+
+    .button_secondary {
+      background-color: #e98724;
+    }
+
+    .input {
+      width: 100px;
+      padding: 0.75rem 1rem;
+      border-radius: 0.317rem;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.5;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .logo-container {
+      width:37%;
+      display:inline-block;
+      padding-left: 70px;
+      vertical-align:top;
+    }
+
+    .logo-image {
+      padding-top: 50px;
+      width: 100px;
+    }
+
+    .key-text {
+        margin-top: -25px;
+        padding-left: 27px;
+        display: block;
+        vertical-align: top;
+        padding-bottom: 10px;
+        font-size: 14px;
+        font-family: Menlo,Monaco,Consolas,Courier New,monospace;
+    }
+
+    @media print
+    {
+        .no-print, .no-print *
+        {
+            display: none !important;
+        }
+    }
+
+  </style>
+</body>
+</html>
